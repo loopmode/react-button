@@ -4,10 +4,10 @@ const groups = {
     default: []
 };
 
-const logger = window.console;
 // import logger from '@xailabs/logger';
 // @logger('AsyncState')
 export default class AsyncState extends Component {
+    logger = window.console;
     static propTypes = {
         successDuration: PropTypes.number,
         errorDuration: PropTypes.number,
