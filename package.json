@@ -1,0 +1,35 @@
+{
+  "name": "@loopmode/react-button",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "docs": "esdoc",
+    "build": "babel src --out-dir lib",
+    "prepublish": "npm run build"
+  },
+  "keywords": [
+    "react",
+    "button",
+    "async",
+    "busy"
+  ],
+  "author": "Jovica Aleksic <jovica.aleksic@loopmode.de>",
+  "license": "ISC",
+  "peerDependencies": {
+    "classnames": ">=2",
+    "react": ">=15"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "classnames": "^2.2.5",
+    "esdoc": "^0.5.2",
+    "react": "^15.3.1"
+  }
+}
