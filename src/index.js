@@ -1,1 +1,3 @@
-export {default as AsyncState} from './AsyncState';
+module.exports = {
+    AsyncState: require('./AsyncState/AsyncState').default
+};
