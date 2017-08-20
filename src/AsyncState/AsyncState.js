@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react';
+import cx from 'classnames';
 
 const groups = {
     default: []
@@ -61,6 +62,7 @@ export default class AsyncState extends Component {
         return React.cloneElement(this.child, this.createChildProps(this.child));
     }
     createChildProps() {
+        const {successClass, errorClass} = this.props;
         const {onClick, ...childProps} = this.child.props;
         if (onClick) {
             childProps.onClick = this.handleClick;
@@ -79,6 +81,11 @@ export default class AsyncState extends Component {
         if (this.state.isPendingGroup) {
             applyPendingProp(childProps, this.props.pendingGroupProp);
         }
+        childProps.className = cx(
+            childProps.className,
+            {[successClass]: this.state.hintSuccess},
+            {[errorClass]: this.state.hintError},
+        );
         return childProps;
     }
     handleClick = (e) => {
@@ -106,6 +113,15 @@ export default class AsyncState extends Component {
             });
         }
     }
+
+
+    //-----------------------------------
+    //
+    // GROUP HANDLING
+    //
+    //-----------------------------------
+
+
     clearTimeouts = () => {
         window.clearTimeout(this._successTimeout);
         window.clearTimeout(this._errorTimeout);
