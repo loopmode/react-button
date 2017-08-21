@@ -5,10 +5,7 @@ const groups = {
     default: []
 };
 
-// import logger from '@xailabs/logger';
-// @logger('AsyncState')
 export default class AsyncState extends Component {
-    logger = window.console;
     static propTypes = {
         successDuration: PropTypes.number,
         errorDuration: PropTypes.number,
@@ -17,7 +14,8 @@ export default class AsyncState extends Component {
         children: PropTypes.element,
         pendingProp: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
         pendingGroupProp: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-        group: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.bool])
+        group: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.bool]),
+        trigger: PropTypes.string,
     };
     static defaultProps = {
         successClass: 'success',
@@ -26,6 +24,7 @@ export default class AsyncState extends Component {
         errorDuration: 1000,
         pendingProp: ['showSpinner', 'disabled'],
         pendingGroupProp: ['disabled'],
+        trigger: 'onClick'
     };
     get child() {
         return React.Children.only(this.props.children);
@@ -62,10 +61,10 @@ export default class AsyncState extends Component {
         return React.cloneElement(this.child, this.createChildProps(this.child));
     }
     createChildProps() {
-        const {successClass, errorClass} = this.props;
-        const {onClick, ...childProps} = this.child.props;
-        if (onClick) {
-            childProps.onClick = this.handleClick;
+        const {successClass, errorClass, trigger} = this.props;
+        const {...childProps} = this.child.props;
+        if (childProps[trigger]) {
+            childProps[trigger] = this.handleTrigger;
         }
         const applyPendingProp = (props, value) => {
             if (typeof value === 'string') {
@@ -88,10 +87,19 @@ export default class AsyncState extends Component {
         );
         return childProps;
     }
-    handleClick = (e) => {
-        this.logger.log('handleClick');
-        const promise = this.child.props.onClick(e);
-        if (promise && typeof promise.then === 'function') {
+    getPromise(value) {
+        if (value && typeof value.then === 'function') {
+            return value;
+        }
+        return undefined;
+    }
+    handleTrigger = (e) => {
+        const {trigger} = this.props;
+        const callback = this.child.props[trigger];
+        const callbackResult = typeof callback === 'function' && callback(e);
+        const promise = this.getPromise(callbackResult);
+        // console.log('handleTrigger', {callback, callbackResult, promise});
+        if (promise) {
             this.clearTimeouts();
             this.setState({isPending: true});
             if (this.props.group) {
@@ -99,19 +107,20 @@ export default class AsyncState extends Component {
             }
             // setup success mechanism
             promise.then(() => {
-                this.logger.info('success!');
+                // console.info('success!');
                 this.setStateSafely({isPending: false, hintSuccess: true, hintError: false});
                 this.setGroupPending(this.props.group, false);
                 this._successTimeout = window.setTimeout(() => this.setStateSafely({hintSuccess: false}), this.props.successDuration);
             });
             // setup error mechanism
             promise.catch(() => {
-                this.logger.info('success!');
+                // console.info('success!');
                 this.setStateSafely({isPending: false, hintError: true, hintSuccess: false});
                 this.setGroupPending(this.props.group, false);
                 this._errorTimeout = window.setTimeout(() => this.setStateSafely({hintError: false}), this.props.errorDuration);
             });
         }
+        return callbackResult;
     }
 
 
@@ -148,12 +157,12 @@ export default class AsyncState extends Component {
     setGroupPending(group, isPendingGroup) {
         const groupName = this.getGroupName(group);
         const groupMembers = groups[groupName];
-        this.logger.info('setGroupPending', {groupName, groupMembers});
+        // console.info('setGroupPending', {groupName, groupMembers});
         if (groupMembers) {
             groupMembers
                 .filter(component => component !== this)
                 .forEach(component => {
-                    this.logger.info('setGroupPending', {component, isPendingGroup});
+                    // console.info('setGroupPending', {component, isPendingGroup});
                     component.setStateSafely({isPendingGroup});
                 })
             ;
